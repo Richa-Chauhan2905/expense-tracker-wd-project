@@ -149,6 +149,10 @@
             <span class="nav-icon">👤</span>
             Profile
           </a>
+          <a href="#" data-page="contact" class="nav-item">
+            <span class="nav-icon">📧</span>
+            Contact
+          </a>
           <a href="#" id="logoutBtn" class="nav-item">
             <span class="nav-icon">🚪</span>
             Logout
@@ -372,6 +376,7 @@
                         📎
                       </label>
                     </div>
+                    <div class="file-upload-status" id="expenseFileStatus"></div>
                   </div>
                 </div>
               </div>
@@ -439,6 +444,7 @@
                         📎
                       </label>
                     </div>
+                    <div class="file-upload-status" id="addExpenseFileStatus"></div>
                   </div>
                 </div>
               </div>
@@ -567,6 +573,83 @@
             </form>
           </div>
         </div>
+
+        <!-- Contact Page -->
+        <div id="contactPage" class="content-page">
+          <div class="page-header">
+            <h2>Contact Us</h2>
+            <p>Get in touch with our support team</p>
+          </div>
+          
+          <div class="contact-info">
+            <div class="contact-info-card">
+              <div class="contact-info-item">
+                <span class="contact-icon">📧</span>
+                <div>
+                  <h4>Email Support</h4>
+                  <p>support@expensetracker.com</p>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <span class="contact-icon">⏰</span>
+                <div>
+                  <h4>Response Time</h4>
+                  <p>Within 24-48 hours</p>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <span class="contact-icon">🌍</span>
+                <div>
+                  <h4>Available</h4>
+                  <p>24/7 Support</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="contact-card">
+            <form id="contactForm" class="contact-form">
+              <div class="form-group">
+                <label for="contactName">Full Name</label>
+                <input type="text" id="contactName" placeholder="Enter your full name" required />
+              </div>
+              <div class="form-group">
+                <label for="contactEmail">Email</label>
+                <input type="email" id="contactEmail" placeholder="Enter your email address" required />
+              </div>
+              <div class="form-group">
+                <label for="contactSubject">Subject</label>
+                <select id="contactSubject" required>
+                  <option value="">Select a subject</option>
+                  <option value="general">General Inquiry</option>
+                  <option value="support">Technical Support</option>
+                  <option value="feature">Feature Request</option>
+                  <option value="bug">Bug Report</option>
+                  <option value="feedback">Feedback</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="contactMessage">Message</label>
+                <textarea id="contactMessage" rows="6" placeholder="Describe your inquiry or issue in detail..." required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="contactPriority">Priority</label>
+                <select id="contactPriority" required>
+                  <option value="">Select priority level</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                <span>📤</span>
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -627,17 +710,18 @@
                   min="0"
                   required
                 />
-                <div class="file-upload-container">
-                  <input
-                    type="file"
-                    id="editExpenseFile"
-                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                    class="file-input"
-                  />
-                  <label for="editExpenseFile" class="file-upload-btn" title="Upload Receipt/File">
-                    📎
-                  </label>
-                </div>
+                                    <div class="file-upload-container">
+                      <input
+                        type="file"
+                        id="editExpenseFile"
+                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                        class="file-input"
+                      />
+                      <label for="editExpenseFile" class="file-upload-btn" title="Upload Receipt/File">
+                        📎
+                      </label>
+                    </div>
+                    <div class="file-upload-status" id="editExpenseFileStatus"></div>
               </div>
             </div>
           </div>

@@ -119,6 +119,12 @@ function setupEventListeners() {
   elements.expenseForm.addEventListener("submit", handleAddExpense);
   elements.addExpenseForm.addEventListener("submit", handleAddExpense);
   elements.profileForm.addEventListener("submit", handleUpdateProfile);
+  
+  // Contact form
+  const contactForm = document.getElementById("contactForm");
+  if (contactForm) {
+    contactForm.addEventListener("submit", handleContactSubmit);
+  }
 
   // Modal
   elements.logoutBtn.addEventListener("click", (e) => {
@@ -241,6 +247,18 @@ function setupEventListeners() {
     // Set initial currency display
     updateCurrencyDisplay();
   }
+
+  // File preview modal
+  const closeFilePreview = document.getElementById("closeFilePreview");
+  if (closeFilePreview) {
+    closeFilePreview.addEventListener("click", () => {
+      document.getElementById("filePreviewModal").classList.remove("active");
+      document.getElementById("overlay").classList.remove("active");
+    });
+  }
+
+  // File upload status handling
+  setupFileUploadStatus();
 }
 
 // Authentication Functions
@@ -371,6 +389,10 @@ function showContentPage(page) {
     case "profile":
       pageElement = document.getElementById("profilePage");
       break;
+    case "contact":
+      pageElement = document.getElementById("contactPage");
+      loadContactForm();
+      break;
     default:
       pageElement = document.getElementById(`${page.replace("-", "")}Page`);
   }
@@ -435,6 +457,17 @@ function showContentPage(page) {
       );
       if (currencyIconProfile) {
         currencyIconProfile.style.display = "none";
+      }
+      // Update currency display for this page
+      updateCurrencyDisplay();
+      break;
+    case "contact":
+      // Hide currency icon on other pages but update currency display
+      const currencyIconContact = document.querySelector(
+        ".currency-icon-container"
+      );
+      if (currencyIconContact) {
+        currencyIconContact.style.display = "none";
       }
       // Update currency display for this page
       updateCurrencyDisplay();
@@ -592,6 +625,24 @@ function editExpense(id) {
   if (expense.file) {
     // Store the existing file data for the edit form
     document.getElementById("editExpenseForm").setAttribute("data-existing-file", JSON.stringify(expense.file));
+    
+    // Show existing file status
+    const statusDiv = document.getElementById("editExpenseFileStatus");
+    if (statusDiv) {
+      statusDiv.innerHTML = `
+        <div class="file-upload-status has-file">
+          <span class="file-name">${expense.file.name}</span>
+          <span>(Existing file)</span>
+          <button class="remove-file" onclick="removeFile('editExpenseFile', 'editExpenseFileStatus')" title="Remove file">×</button>
+        </div>
+      `;
+    }
+  } else {
+    // Clear file status if no file
+    const statusDiv = document.getElementById("editExpenseFileStatus");
+    if (statusDiv) {
+      statusDiv.innerHTML = '';
+    }
   }
 
   // Show edit modal
@@ -636,6 +687,18 @@ function hideEditExpenseModal() {
   document.getElementById("editExpenseModal").classList.remove("active");
   document.getElementById("overlay").classList.remove("active");
   currentEditingExpenseId = null;
+  
+  // Clear file status
+  const statusDiv = document.getElementById("editExpenseFileStatus");
+  if (statusDiv) {
+    statusDiv.innerHTML = '';
+  }
+  
+  // Clear existing file data
+  const editForm = document.getElementById("editExpenseForm");
+  if (editForm) {
+    editForm.removeAttribute("data-existing-file");
+  }
 }
 
 function showBudgetForm() {
@@ -1032,6 +1095,69 @@ function handleUpdateProfile(e) {
   showNotification("Profile updated successfully!", "success");
 }
 
+// Contact Functions
+function loadContactForm() {
+  if (currentUser) {
+    // Pre-fill with user's information if available
+    const nameField = document.getElementById("contactName");
+    const emailField = document.getElementById("contactEmail");
+    
+    if (nameField && currentUser.name) {
+      nameField.value = currentUser.name;
+    }
+    if (emailField && currentUser.email) {
+      emailField.value = currentUser.email;
+    }
+  }
+}
+
+function handleContactSubmit(e) {
+  e.preventDefault();
+
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  
+  // Show loading state
+  submitBtn.innerHTML = '<span>⏳</span> Sending...';
+  submitBtn.disabled = true;
+
+  const name = document.getElementById("contactName").value;
+  const email = document.getElementById("contactEmail").value;
+  const subject = document.getElementById("contactSubject").value;
+  const message = document.getElementById("contactMessage").value;
+  const priority = document.getElementById("contactPriority").value;
+
+  // Create contact message object
+  const contactMessage = {
+    id: Date.now(),
+    name,
+    email,
+    subject,
+    message,
+    priority,
+    timestamp: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  // Store in localStorage (in a real app, this would be sent to a server)
+  const contactMessages = JSON.parse(localStorage.getItem("contactMessages")) || [];
+  contactMessages.push(contactMessage);
+  localStorage.setItem("contactMessages", JSON.stringify(contactMessages));
+
+  // Clear form
+  document.getElementById("contactForm").reset();
+
+  // Show success message
+  showNotification("Message sent successfully! We'll get back to you soon.", "success");
+  
+  // Reset button state
+  submitBtn.innerHTML = originalText;
+  submitBtn.disabled = false;
+  
+  // Re-load contact form to pre-fill user info again
+  loadContactForm();
+}
+
 // Modal Functions
 function showLogoutModal() {
   elements.logoutModal.classList.add("active");
@@ -1200,6 +1326,55 @@ function showNotification(message, type = "info") {
       document.body.removeChild(notification);
     }, 300);
   }, 3000);
+}
+
+// File Upload Status Functions
+function setupFileUploadStatus() {
+  const fileInputs = [
+    { input: 'expenseFile', status: 'expenseFileStatus' },
+    { input: 'addExpenseFile', status: 'addExpenseFileStatus' },
+    { input: 'editExpenseFile', status: 'editExpenseFileStatus' }
+  ];
+
+  fileInputs.forEach(({ input, status }) => {
+    const fileInput = document.getElementById(input);
+    const statusDiv = document.getElementById(status);
+    
+    if (fileInput && statusDiv) {
+      fileInput.addEventListener('change', (e) => {
+        updateFileUploadStatus(e.target, statusDiv);
+      });
+    }
+  });
+}
+
+function updateFileUploadStatus(fileInput, statusDiv) {
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const fileSize = (file.size / 1024).toFixed(1); // Convert to KB
+    
+    statusDiv.innerHTML = `
+      <div class="file-upload-status has-file">
+        <span class="file-name">${file.name}</span>
+        <span>(${fileSize} KB)</span>
+        <button class="remove-file" onclick="removeFile('${fileInput.id}', '${statusDiv.id}')" title="Remove file">×</button>
+      </div>
+    `;
+  } else {
+    statusDiv.innerHTML = '';
+  }
+}
+
+function removeFile(inputId, statusId) {
+  const fileInput = document.getElementById(inputId);
+  const statusDiv = document.getElementById(statusId);
+  
+  if (fileInput) {
+    fileInput.value = '';
+  }
+  if (statusDiv) {
+    statusDiv.innerHTML = '';
+  }
 }
 
 // File Preview Functions
