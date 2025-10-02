@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/db_connect.php';
+require_once '../includes/functions.php';
 
 // Redirect to login if not authenticated
 if (!isset($_SESSION['user_id'])) {
@@ -20,21 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileForm'])) {
     $new_phone = trim($_POST['profilePhone']);
     $new_password = trim($_POST['profilePassword']);
 
-    // Update query
-    $update_sql = "UPDATE users SET name = :name, email = :email, phone = :phone";
-    $params = [
-        ':name' => $new_name,
-        ':email' => $new_email,
-        ':phone' => $new_phone,
-        ':id' => $user_id
-    ];
-    if (!empty($new_password)) {
-        $update_sql .= ", password = :password";
-        $params[':password'] = $new_password; // For production, hash the password!
-    }
-    $update_sql .= " WHERE id = :id";
-    $stmt = $pdo->prepare($update_sql);
-    $stmt->execute($params);
+    // Use the reusable function
+    updateUserProfile($pdo, $user_id, $new_name, $new_email, $new_phone, $new_password);
 
     // Update session
     $_SESSION['user_name'] = $new_name;

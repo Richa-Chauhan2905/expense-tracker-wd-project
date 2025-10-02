@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'expense_tracker1';
+$dbname = 'expense_tracker';
 $username = 'root';
 $password = '';
 
