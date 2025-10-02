@@ -328,6 +328,12 @@ if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         <button type="submit" class="btn btn-primary">Add Expense</button>
                     </form>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3 id="totalUsers">Loading...</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Manage Expenses Page -->

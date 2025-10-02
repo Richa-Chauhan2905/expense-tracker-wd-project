@@ -41,6 +41,8 @@ function init() {
 
   // Load user data
   loadUserData();
+  loadUserCount();
+
 
   // Setup everything
   setupEventListeners();
@@ -856,19 +858,31 @@ function updateDashboard() {
     );
   });
 
-  const thisMonthTotal = thisMonth.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  const lastMonthTotal = lastMonth.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  const thisMonthTotal = thisMonth.reduce(
+    (sum, e) => sum + parseFloat(e.amount),
+    0
+  );
+  const lastMonthTotal = lastMonth.reduce(
+    (sum, e) => sum + parseFloat(e.amount),
+    0
+  );
 
   const thisMonthTotalEl = document.getElementById("thisMonthTotal");
   const lastMonthTotalEl = document.getElementById("lastMonthTotal");
   const monthlyBudgetEl = document.getElementById("monthlyBudget");
 
   if (thisMonthTotalEl)
-    thisMonthTotalEl.textContent = `${currentCurrencySymbol}${thisMonthTotal.toFixed(2)}`;
+    thisMonthTotalEl.textContent = `${currentCurrencySymbol}${thisMonthTotal.toFixed(
+      2
+    )}`;
   if (lastMonthTotalEl)
-    lastMonthTotalEl.textContent = `${currentCurrencySymbol}${lastMonthTotal.toFixed(2)}`;
+    lastMonthTotalEl.textContent = `${currentCurrencySymbol}${lastMonthTotal.toFixed(
+      2
+    )}`;
   if (monthlyBudgetEl)
-    monthlyBudgetEl.textContent = `${currentCurrencySymbol}${monthlyBudget.toFixed(2)}`;
+    monthlyBudgetEl.textContent = `${currentCurrencySymbol}${monthlyBudget.toFixed(
+      2
+    )}`;
 
   updateBudgetProgress(thisMonthTotal);
 }
@@ -882,11 +896,13 @@ function loadUserData() {
       .then((response) => response.json())
       .then((data) => {
         expenses = data || [];
-        console.log(`Loaded ${expenses.length} expenses from DB for user ${currentUser.id}`);
-        
+        console.log(
+          `Loaded ${expenses.length} expenses from DB for user ${currentUser.id}`
+        );
+
         // Update dashboard with new data
         updateDashboard(); // Add this line
-        
+
         if (currentPage === "manage-expenses") renderExpensesList();
         if (currentPage === "expense-report") renderCharts();
       })
@@ -896,7 +912,26 @@ function loadUserData() {
       });
   }
 }
-
+function loadUserCount() {
+  fetch("get_user_count.php", {
+    method: "GET",
+    credentials: "include",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.total_users !== undefined) {
+        const totalUsersEl = document.getElementById("totalUsers");
+        if (totalUsersEl) {
+          totalUsersEl.textContent = data.total_users;
+        }
+      } else if (data.error) {
+        console.error("Error loading user count:", data.error);
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to load user count:", err);
+    });
+}
 function updateBudgetProgress(thisMonthTotal) {
   const budgetProgress = document.getElementById("budgetProgress");
   const budgetStatus = document.getElementById("budgetStatus");
