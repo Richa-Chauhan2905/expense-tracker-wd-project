@@ -807,15 +807,15 @@ function handleUpdateProfile(e) {
     showNotification("Profile updated successfully!", "success");
 }
 
-function loadProfileData() {
-    const profileName = document.getElementById("profileName");
-    const profileEmail = document.getElementById("profileEmail");
-    const profilePhone = document.getElementById("profilePhone");
+// function loadProfileData() {
+//     const profileName = document.getElementById("profileName");
+//     const profileEmail = document.getElementById("profileEmail");
+//     const profilePhone = document.getElementById("profilePhone");
     
-    if (profileName) profileName.value = currentUser.name || "";
-    if (profileEmail) profileEmail.value = currentUser.email || "";
-    if (profilePhone) profilePhone.value = currentUser.phone || "";
-}
+//     if (profileName) profileName.value = currentUser.name || "";
+//     if (profileEmail) profileEmail.value = currentUser.email || "";
+//     if (profilePhone) profilePhone.value = currentUser.phone || "";
+// }
 
 // Contact Functions
 function handleContactSubmit(e) {

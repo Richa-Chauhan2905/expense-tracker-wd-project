@@ -1,10 +1,6 @@
 <?php
 session_start();
-
-// Debug: Check what's in the session
-echo "<!-- Session Debug: ";
-print_r($_SESSION);
-echo " -->";
+require_once '../includes/db_connect.php';
 
 // Redirect to login if not authenticated
 if (!isset($_SESSION['user_id'])) {
@@ -12,17 +8,51 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Check if user_name and user_email exist
-if (!isset($_SESSION['user_name'])) {
-    $_SESSION['user_name'] = 'User'; // Fallback value
+$user_id = $_SESSION['user_id'];
+$user_name = '';
+$user_email = '';
+$user_phone = '';
+
+// Handle profile update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileForm'])) {
+    $new_name = trim($_POST['profileName']);
+    $new_email = trim($_POST['profileEmail']);
+    $new_phone = trim($_POST['profilePhone']);
+    $new_password = trim($_POST['profilePassword']);
+
+    // Update query
+    $update_sql = "UPDATE users SET name = :name, email = :email, phone = :phone";
+    $params = [
+        ':name' => $new_name,
+        ':email' => $new_email,
+        ':phone' => $new_phone,
+        ':id' => $user_id
+    ];
+    if (!empty($new_password)) {
+        $update_sql .= ", password = :password";
+        $params[':password'] = $new_password; // For production, hash the password!
+    }
+    $update_sql .= " WHERE id = :id";
+    $stmt = $pdo->prepare($update_sql);
+    $stmt->execute($params);
+
+    // Update session
+    $_SESSION['user_name'] = $new_name;
+    $_SESSION['user_email'] = $new_email;
+    $_SESSION['user_phone'] = $new_phone;
 }
 
-if (!isset($_SESSION['user_email'])) {
-    $_SESSION['user_email'] = 'email@example.com'; // Fallback value
+// Fetch user info from DB
+$stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $user_name = $row['name'];
+    $user_email = $row['email'];
+    $user_phone = $row['phone'];
+    $_SESSION['user_name'] = $user_name;
+    $_SESSION['user_email'] = $user_email;
+    $_SESSION['user_phone'] = $user_phone;
 }
-
-$user_name = $_SESSION['user_name'];
-$user_email = $_SESSION['user_email'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -404,22 +434,23 @@ $user_email = $_SESSION['user_email'];
                     <p>Manage your account information</p>
                 </div>
                 <div class="profile-card">
-                    <form id="profileForm" class="profile-form">
+                    <form id="profileForm" class="profile-form" method="post" action="">
+                        <input type="hidden" name="profileForm" value="1" />
                         <div class="form-group">
                             <label for="profileName">Full Name</label>
-                            <input type="text" id="profileName" value="<?php echo htmlspecialchars($user_name); ?>" required />
+                            <input type="text" id="profileName" name="profileName" value="<?php echo htmlspecialchars($user_name); ?>" required />
                         </div>
                         <div class="form-group">
                             <label for="profileEmail">Email</label>
-                            <input type="email" id="profileEmail" value="<?php echo htmlspecialchars($user_email); ?>" required />
+                            <input type="email" id="profileEmail" name="profileEmail" value="<?php echo htmlspecialchars($user_email); ?>" required />
                         </div>
                         <div class="form-group">
                             <label for="profilePhone">Phone Number</label>
-                            <input type="tel" id="profilePhone" placeholder="Enter your phone number" />
+                            <input type="tel" id="profilePhone" name="profilePhone" value="<?php echo htmlspecialchars($user_phone); ?>" placeholder="Enter your phone number" />
                         </div>
                         <div class="form-group">
                             <label for="profilePassword">New Password (leave blank to keep current)</label>
-                            <input type="password" id="profilePassword" />
+                            <input type="password" id="profilePassword" name="profilePassword" />
                         </div>
                         <button type="submit" class="btn btn-primary">
                             Update Profile
