@@ -396,23 +396,6 @@ if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         </div>
                     </div>
                 </div>
-                <div class="comparison-card">
-                    <h3>Month-to-Month Comparison</h3>
-                    <div class="comparison-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Current Month</span>
-                            <span class="stat-value" id="currentMonthStat">$0.00</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Previous Month</span>
-                            <span class="stat-value" id="previousMonthStat">$0.00</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Difference</span>
-                            <span class="stat-value" id="differenceStat">$0.00</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Profile Page -->
@@ -460,7 +443,8 @@ if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                             <span class="contact-icon">📧</span>
                             <div>
                                 <h4>Email Support</h4>
-                                <p>support@expensetracker.com</p>
+                                <p>support@expenz</p>
+                                <p>o.com</p>
                             </div>
                         </div>
                         <div class="contact-info-item">

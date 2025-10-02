@@ -20,18 +20,21 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_created_at (created_at)
 );
 
-INSERT INTO users (name, email, phone, password, currency, currency_symbol, monthly_budget) 
-VALUES (
-    'John Doe', 
-    'john.doe@example.com', 
-    '+1234567890', 
-    'password123',
-    'USD', 
-    '$', 
-    1000.00
+-- Expenses Table
+CREATE TABLE IF NOT EXISTS expenses (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    date DATE NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    item VARCHAR(255) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    file_path VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-DESCRIBE users;
+DESCRIBE expenses;
 
-SELECT id, name, email, phone, currency, currency_symbol, monthly_budget, created_at 
-FROM users;
+SELECT id, user_id, date, category, item, amount, file_path, created_at 
+FROM expenses;
