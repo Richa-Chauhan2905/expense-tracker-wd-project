@@ -43,7 +43,6 @@ function init() {
   loadUserData();
   loadUserCount();
 
-
   // Setup everything
   setupEventListeners();
   setCurrentDate();
@@ -969,32 +968,66 @@ function handleUpdateProfile(e) {
   const nameInput = document.getElementById("profileName");
   const emailInput = document.getElementById("profileEmail");
   const phoneInput = document.getElementById("profilePhone");
+  const passwordInput = document.getElementById("profilePassword");
 
   if (!nameInput || !emailInput) return;
 
-  // Update current user
-  currentUser.name = nameInput.value;
-  currentUser.email = emailInput.value;
-  currentUser.phone = phoneInput ? phoneInput.value : "";
+  // Create FormData for backend submission
+  const formData = new FormData();
+  formData.append("profileForm", "true");
+  formData.append("profileName", nameInput.value);
+  formData.append("profileEmail", emailInput.value);
+  formData.append("profilePhone", phoneInput ? phoneInput.value : "");
+  formData.append("profilePassword", passwordInput ? passwordInput.value : "");
 
-  // Update welcome message
-  const welcomeUser = document.getElementById("welcomeUser");
-  if (welcomeUser) {
-    welcomeUser.textContent = `Welcome, ${currentUser.name}!`;
-  }
+  // Send to backend
+  fetch("", {
+    // Empty string means submit to same page (index.php)
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.text();
+    })
+    .then((result) => {
+      console.log("Profile update result:", result);
 
-  showNotification("Profile updated successfully!", "success");
+      // Update current user in frontend
+      currentUser.name = nameInput.value;
+      currentUser.email = emailInput.value;
+      currentUser.phone = phoneInput ? phoneInput.value : "";
+
+      // Update welcome message
+      const welcomeUser = document.getElementById("welcomeUser");
+      if (welcomeUser) {
+        welcomeUser.textContent = `Welcome, ${currentUser.name}!`;
+      }
+
+      // Update session data in frontend
+      if (typeof updateSessionData === "function") {
+        updateSessionData(
+          currentUser.name,
+          currentUser.email,
+          currentUser.phone
+        );
+      }
+
+      showNotification("Profile updated successfully!", "success");
+
+      // Optional: Reload the page to get fresh data from backend
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    })
+    .catch((err) => {
+      console.error("Profile update error:", err);
+      showNotification("Failed to update profile!", "error");
+    });
 }
-
-// function loadProfileData() {
-//     const profileName = document.getElementById("profileName");
-//     const profileEmail = document.getElementById("profileEmail");
-//     const profilePhone = document.getElementById("profilePhone");
-
-//     if (profileName) profileName.value = currentUser.name || "";
-//     if (profileEmail) profileEmail.value = currentUser.email || "";
-//     if (profilePhone) profilePhone.value = currentUser.phone || "";
-// }
 
 // Contact Functions
 function handleContactSubmit(e) {
