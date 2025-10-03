@@ -22,12 +22,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileForm'])) {
     $new_password = trim($_POST['profilePassword']);
 
     // Use the reusable function
-    updateUserProfile($pdo, $user_id, $new_name, $new_email, $new_phone, $new_password);
+    $update_success = updateUserProfile($pdo, $user_id, $new_name, $new_email, $new_phone, $new_password);
 
-    // Update session
-    $_SESSION['user_name'] = $new_name;
-    $_SESSION['user_email'] = $new_email;
-    $_SESSION['user_phone'] = $new_phone;
+    if ($update_success) {
+        // Update session
+        $_SESSION['user_name'] = $new_name;
+        $_SESSION['user_email'] = $new_email;
+        $_SESSION['user_phone'] = $new_phone;
+
+        // Set success message
+        $_SESSION['profile_update_success'] = true;
+    } else {
+        // Set error message
+        $_SESSION['profile_update_error'] = "Failed to update profile. Please try again.";
+    }
 }
 
 // Fetch user info from DB
@@ -41,6 +49,14 @@ if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $_SESSION['user_email'] = $user_email;
     $_SESSION['user_phone'] = $user_phone;
 }
+
+// Check for success/error messages
+$profile_update_success = isset($_SESSION['profile_update_success']) ? $_SESSION['profile_update_success'] : false;
+$profile_update_error = isset($_SESSION['profile_update_error']) ? $_SESSION['profile_update_error'] : null;
+
+// Clear the messages after reading
+unset($_SESSION['profile_update_success']);
+unset($_SESSION['profile_update_error']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -405,11 +421,25 @@ if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             </div>
 
             <!-- Profile Page -->
+            <!-- Profile Page -->
             <div id="profilePage" class="content-page">
                 <div class="page-header">
                     <h2>Profile</h2>
                     <p>Manage your account information</p>
                 </div>
+
+                <?php if ($profile_update_success): ?>
+                    <div class="notification success" style="margin: 1rem 0;">
+                        Profile updated successfully!
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($profile_update_error): ?>
+                    <div class="notification error" style="margin: 1rem 0;">
+                        <?php echo htmlspecialchars($profile_update_error); ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="profile-card">
                     <form id="profileForm" class="profile-form" method="post" action="">
                         <input type="hidden" name="profileForm" value="1" />
@@ -435,7 +465,6 @@ if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     </form>
                 </div>
             </div>
-
             <!-- Contact Page -->
             <div id="contactPage" class="content-page">
                 <div class="page-header">

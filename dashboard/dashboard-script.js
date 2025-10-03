@@ -1001,61 +1001,8 @@ function handleUpdateProfile(e) {
 
   if (!nameInput || !emailInput) return;
 
-  // Create FormData for backend submission
-  const formData = new FormData();
-  formData.append("profileForm", "true");
-  formData.append("profileName", nameInput.value);
-  formData.append("profileEmail", emailInput.value);
-  formData.append("profilePhone", phoneInput ? phoneInput.value : "");
-  formData.append("profilePassword", passwordInput ? passwordInput.value : "");
-
-  // Send to backend
-  fetch("", {
-    // Empty string means submit to same page (index.php)
-    method: "POST",
-    body: formData,
-    credentials: "include",
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.text();
-    })
-    .then((result) => {
-      console.log("Profile update result:", result);
-
-      // Update current user in frontend
-      currentUser.name = nameInput.value;
-      currentUser.email = emailInput.value;
-      currentUser.phone = phoneInput ? phoneInput.value : "";
-
-      // Update welcome message
-      const welcomeUser = document.getElementById("welcomeUser");
-      if (welcomeUser) {
-        welcomeUser.textContent = `Welcome, ${currentUser.name}!`;
-      }
-
-      // Update session data in frontend
-      if (typeof updateSessionData === "function") {
-        updateSessionData(
-          currentUser.name,
-          currentUser.email,
-          currentUser.phone
-        );
-      }
-
-      showNotification("Profile updated successfully!", "success");
-
-      // Optional: Reload the page to get fresh data from backend
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    })
-    .catch((err) => {
-      console.error("Profile update error:", err);
-      showNotification("Failed to update profile!", "error");
-    });
+  // Submit the form normally (will cause page reload)
+  e.target.submit();
 }
 
 // Contact Functions
