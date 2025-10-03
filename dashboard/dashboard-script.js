@@ -23,7 +23,6 @@ const categoryColors = {
 function init() {
   console.log("Initializing dashboard...");
 
-  // Get user from PHP session (set in the HTML)
   currentUser = {
     id: "<?php echo $_SESSION['user_id']; ?>",
     name: "<?php echo $_SESSION['user_name']; ?>",
@@ -61,7 +60,7 @@ function loadUserData() {
 
     fetch("get_expenses.php", {
       method: "GET",
-      credentials: "include", // 🔑 keeps PHP session
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -76,14 +75,10 @@ function loadUserData() {
         expenses = [];
         console.error("Failed to load expenses:", err);
       });
-
-    // TODO: Load monthlyBudget from DB if you move it there
   }
 }
 
 function saveUserData() {
-  // This function is no longer needed since we're using the database
-  // Remove any calls to this function from your code
   console.log("Data is now saved directly to database");
 }
 
@@ -115,6 +110,18 @@ function setupEventListeners() {
       sidebar.classList.remove("active");
       overlay.classList.remove("active");
     });
+
+    // Edit expense form
+    const editExpenseForm = document.getElementById("editExpenseForm");
+    if (editExpenseForm) {
+      editExpenseForm.addEventListener("submit", handleEditExpense);
+    }
+
+    // Cancel edit button
+    const cancelEdit = document.getElementById("cancelEdit");
+    if (cancelEdit) {
+      cancelEdit.addEventListener("click", hideEditExpenseModal);
+    }
   }
 
   // Navigation items
@@ -657,11 +664,13 @@ function handleAddExpense(e) {
 
 function editExpense(id) {
   const expense = expenses.find((e) => e.id === id);
-  if (!expense) return;
+  if (!expense) {
+    showNotification("Expense not found!", "error");
+    return;
+  }
 
   currentEditingExpenseId = id;
 
-  // Populate edit form
   const editDate = document.getElementById("editExpenseDate");
   const editCategory = document.getElementById("editExpenseCategory");
   const editItem = document.getElementById("editExpenseItem");
@@ -682,36 +691,56 @@ function editExpense(id) {
 function handleEditExpense(e) {
   e.preventDefault();
 
-  if (!currentEditingExpenseId) return;
-
-  const expenseIndex = expenses.findIndex(
-    (e) => e.id === currentEditingExpenseId
-  );
-  if (expenseIndex === -1) return;
+  if (!currentEditingExpenseId) {
+    showNotification("No expense selected for editing!", "error");
+    return;
+  }
 
   const editDate = document.getElementById("editExpenseDate");
   const editCategory = document.getElementById("editExpenseCategory");
   const editItem = document.getElementById("editExpenseItem");
   const editAmount = document.getElementById("editExpenseAmount");
 
-  if (!editDate || !editCategory || !editItem || !editAmount) return;
+  if (!editDate || !editCategory || !editItem || !editAmount) {
+    showNotification("Please fill in all fields!", "error");
+    return;
+  }
 
-  expenses[expenseIndex] = {
-    ...expenses[expenseIndex],
-    date: editDate.value,
-    category: editCategory.value,
-    item: editItem.value,
-    amount: parseFloat(editAmount.value),
-  };
+  // Create FormData for backend submission
+  const formData = new FormData();
+  formData.append("expense_id", currentEditingExpenseId);
+  formData.append("date", editDate.value);
+  formData.append("category", editCategory.value);
+  formData.append("item", editItem.value);
+  formData.append("amount", editAmount.value);
 
-  saveUserData();
-  hideEditExpenseModal();
+  // Send to backend
+  fetch("update_expense.php", {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.text();
+    })
+    .then((result) => {
+      console.log("Update expense result:", result);
 
-  updateDashboard();
-  if (currentPage === "manage-expenses") renderExpensesList();
-  if (currentPage === "expense-report") renderCharts();
+      // Close the modal first
+      hideEditExpenseModal();
 
-  showNotification("Expense updated successfully!", "success");
+      // Reload expenses from database to get updated data
+      loadUserData();
+
+      showNotification("Expense updated successfully!", "success");
+    })
+    .catch((err) => {
+      console.error("Update expense error:", err);
+      showNotification("Failed to update expense: " + err.message, "error");
+    });
 }
 
 function deleteExpense(expenseId) {
